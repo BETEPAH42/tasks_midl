@@ -1,10 +1,10 @@
 <?php
 
-$newException = new class('Ошибка сервера', 500, null) extends Exception
+$newException = new class extends Exception
 {
     protected $context;
 
-    public function __construct($message = "", $code = 500, $context = null)
+    public function __construct($message = "Ошибка сервера", $code = 500, $context = null)
     {
         parent::__construct($message, $code);
         $this->context = $context;
