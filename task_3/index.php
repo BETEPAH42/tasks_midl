@@ -1,19 +1,20 @@
 <?php
 $dailySBR = new class('https://cbr.ru/DailyInfoWebServ/DailyInfo.asmx?WSDL') extends SoapClient
 {
-    public function __call($function_name, $arguments) {
-        $result = parent::__call($function_name, $arguments);
-        if($function_name == "KeyRate") {
-            $xml = \simplexml_load_string($result->KeyRateResult->any, "SimpleXMLElement", LIBXML_NOCDATA);
-            $array = json_decode(json_encode($xml),TRUE);
-            $resultKR = array_map(function ($item){
-                return [
-                    'date' => (new DateTime($item['DT']))->format('d.m.Y'),
-                    'Rate' => number_format($item['Rate'],2)
-                ];
-            },$array['KeyRate']['KR']);
-            $result = array_reverse($resultKR);
-        }
+    public function KeyRate($arguments) {
+        $result = parent::KeyRate($arguments);
+        $result = $this->xmlToArray($result->KeyRateResult);
+        return $result;
+    }
+
+    protected function xmlToArray($xml)
+    {
+        $prepearData = \simplexml_load_string($xml->any, "SimpleXMLElement", LIBXML_NOCDATA);
+        $array = json_decode(json_encode($prepearData),TRUE);
+        $result = array_reduce($array["KeyRate"]['KR'], function ($newArray,$item){
+                $newArray[(new DateTime($item['DT']))->format('d.m.Y')] = number_format($item['Rate'],2);
+                return $newArray;
+        });
         return $result;
     }
 };
